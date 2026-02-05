@@ -789,9 +789,7 @@
                 }
                 const totalRes = await fetch(totalUrl);
                 const totalData = await totalRes.json();
-                
-                // Mostro il numero generale (aggiungo un po' di visite perse col blocco)
-                document.getElementById("visitor-count").textContent = totalData.count + 150;
+                document.getElementById("visitor-count").textContent = totalData.count;
 
                   // 2. GESTIONE CONTATORE BANDCAMP SPECIFICO
                 let bcUrl = `https://api.counterapi.dev/v1/${namespace}/${keyBandcamp}`;
