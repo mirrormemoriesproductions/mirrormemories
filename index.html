@@ -770,6 +770,7 @@
 
     <!-- 👉 IL NUOVO SCRIPT DEL CONTATORE FUNZIONANTE 👈 -->
     <script>
+        <script>
         const namespace = "mirrormemories_prod"; 
         const keyTotal = "visits_total";
         const keyBandcamp = "visits_bandcamp";
@@ -791,7 +792,7 @@
                 const totalData = await totalRes.json();
                 document.getElementById("visitor-count").textContent = totalData.count;
 
-                  // 2. GESTIONE CONTATORE BANDCAMP SPECIFICO
+                // 2. GESTIONE CONTATORE BANDCAMP SPECIFICO
                 let bcUrl = `https://api.counterapi.dev/v1/${namespace}/${keyBandcamp}`;
                 // Se arriva da Bandcamp E non lo abbiamo ancora contato in questa sessione, fa +1
                 if (isFromBandcamp && !sessionStorage.getItem('counted_bc')) {
@@ -801,16 +802,16 @@
                 const bcRes = await fetch(bcUrl);
                 const bcData = await bcRes.json();
                 
-                // Mostro il numero di Bandcamp (ORA È REALE, NESSUN TRUCCO)
+                // Mostro il numero di Bandcamp (reale)
                 document.getElementById("bandcamp-visits").textContent = bcData.count;
 
-        } catch (e) {
-  console.error("Errore di caricamento contatori:", e);
-  // Non forziamo nessun valore: se c'è errore, lascio quello che c'è già sulla pagina
-  // (oppure puoi mettere un trattino, se vuoi mostrare che c'è stato un errore)
-  // document.getElementById("visitor-count").textContent = "-";
-  // document.getElementById("bandcamp-visits").textContent = "-";
-}
+            } catch (e) {
+                console.error("Errore di caricamento contatori:", e);
+                // Non forziamo nessun valore: se c'è errore, non tocchiamo ciò che è già sulla pagina
+                // (opzionale: puoi mostrare un trattino)
+                // document.getElementById("visitor-count").textContent = "-";
+                // document.getElementById("bandcamp-visits").textContent = "-";
+            }
         }
 
         // Faccio partire tutto appena la pagina carica
