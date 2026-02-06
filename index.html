@@ -804,12 +804,13 @@
                 // Mostro il numero di Bandcamp (ORA È REALE, NESSUN TRUCCO)
                 document.getElementById("bandcamp-visits").textContent = bcData.count;
 
-            } catch (e) {
-                console.error("Errore di caricamento, utilizzo numeri sicuri:", e);
-                // In caso di errore di connessione mostra questi (i tuoi veri numeri di partenza)
-                document.getElementById("visitor-count").textContent = "6"; 
-                document.getElementById("bandcamp-visits").textContent = "0";
-            }
+        } catch (e) {
+  console.error("Errore di caricamento contatori:", e);
+  // Non forziamo nessun valore: se c'è errore, lascio quello che c'è già sulla pagina
+  // (oppure puoi mettere un trattino, se vuoi mostrare che c'è stato un errore)
+  // document.getElementById("visitor-count").textContent = "-";
+  // document.getElementById("bandcamp-visits").textContent = "-";
+}
         }
 
         // Faccio partire tutto appena la pagina carica
