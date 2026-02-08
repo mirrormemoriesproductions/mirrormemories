@@ -766,41 +766,31 @@
             setTimeout(() => { button.style.transform = ''; }, 300);
             alert(message);
         }
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const mioSitoID = "mirrormemories-official-site-v2"; 
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const namespace = "mirrormemories-official-v4"; 
+        
+        fetch("https://api.counterapi.dev/v1/" + namespace + "/visite_totali/up")
+            .then(response => response.json())
+            .then(data => {
+                let counterEl = document.getElementById("visitor-count");
+                if(counterEl) counterEl.innerText = data.count;
+            })
+            .catch(err => console.error(err));
 
-            // 1. Visite Totali
-            fetch(\`https://api.counterapi.dev/v1/\${mioSitoID}/visite_totali/up\`)
-                .then(res => res.json())
-                .then(data => {
-                    let counter = document.getElementById('visitor-count');
-                    if(counter) counter.innerText = data.count;
-                })
-                .catch(err => console.error("Errore API totale:", err));
-
-            // 2. Visite da Bandcamp
-            if (document.referrer.toLowerCase().includes('bandcamp.com')) {
-                fetch(\`https://api.counterapi.dev/v1/\${mioSitoID}/visite_bandcamp/up\`)
-                    .then(res => res.json())
-                    .then(data => {
-                        let bcCounter = document.getElementById('bandcamp-visits');
-                        if(bcCounter) bcCounter.innerText = data.count;
-                    })
-                    .catch(err => console.error("Errore API Bandcamp up:", err));
-            } else {
-                fetch(\`https://api.counterapi.dev/v1/\${mioSitoID}/visite_bandcamp\`)
-                    .then(res => res.json())
-                    .then(data => {
-                        let bcCounter = document.getElementById('bandcamp-visits');
-                        if(bcCounter) bcCounter.innerText = data.count || 0;
-                    })
-                    .catch(err => {
-                        let bcCounter = document.getElementById('bandcamp-visits');
-                        if(bcCounter) bcCounter.innerText = 0;
-                    });
-            }
-        });
-    <\/script>
+        let isBandcamp = document.referrer.toLowerCase().includes("bandcamp.com");
+        let bcUrl = isBandcamp 
+            ? "https://api.counterapi.dev/v1/" + namespace + "/visite_bandcamp/up" 
+            : "https://api.counterapi.dev/v1/" + namespace + "/visite_bandcamp";
+        
+        fetch(bcUrl)
+            .then(response => response.json())
+            .then(data => {
+                let bcCounterEl = document.getElementById("bandcamp-visits");
+                if(bcCounterEl) bcCounterEl.innerText = data.count || 0;
+            })
+            .catch(err => console.error(err));
+    });
+<\/script>
 </body>
 </html>
