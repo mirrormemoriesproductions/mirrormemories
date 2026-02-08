@@ -817,30 +817,5 @@
         // Faccio partire tutto appena la pagina carica
         document.addEventListener("DOMContentLoaded", initCounters);
     </script>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // Forza l'aggiornamento dei visitatori totali
-        fetch("https://api.counterapi.dev/v1/mirrormemories_site/total_visits/up")
-            .then(res => res.json())
-            .then(data => {
-                let totalEl = document.getElementById("visitor-count");
-                if(totalEl) totalEl.innerText = data.count;
-            }).catch(e => console.log("Counter info: server busy"));
-
-        // Forza l'aggiornamento visite Bandcamp
-        let bcEl = document.getElementById("bandcamp-visits");
-        if(bcEl) {
-            if (document.referrer.toLowerCase().includes("bandcamp.com")) {
-                fetch("https://api.counterapi.dev/v1/mirrormemories_site/bandcamp_visits/up")
-                    .then(res => res.json())
-                    .then(data => bcEl.innerText = data.count);
-            } else {
-                fetch("https://api.counterapi.dev/v1/mirrormemories_site/bandcamp_visits")
-                    .then(res => res.json())
-                    .then(data => bcEl.innerText = data.count || "0");
-            }
-        }
-    });
-</script>
 </body>
 </html>
