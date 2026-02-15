@@ -205,31 +205,31 @@
             </div>
         </section>
 
-        <!-- Visitor Counter Section -->
+        <!-- Visitor Counter Section - RIPARATO -->
         <section class="py-12 bg-black/30">
             <div class="container mx-auto px-6 text-center">
                 <h2 class="heading text-3xl md:text-5xl mb-6 gradient-text" data-it="Visitatori" data-en="Visitors">Visitatori</h2>
 
                 <div class="artist-card rounded-3xl p-8 max-w-2xl mx-auto">
                     <i class="fas fa-users text-4xl text-yellow-400 mb-4" aria-hidden="true"></i>
-
                     <h3 class="heading text-2xl mb-4" data-it="Grazie per la tua visita!" data-en="Thank you for visiting!">Grazie per la tua visita!</h3>
 
+                    <!-- Contatore Totale -->
                     <div class="text-5xl font-bold gradient-text mb-2" id="visitor-count">0</div>
-                    <p class="text-gray-400" data-it="Visitatori unici finora" data-en="Unique visitors so far">Visitatori unici finora</p>
+                    <p class="text-gray-400 mb-6" data-it="Visite totali" data-en="Total visits">Visite totali</p>
 
-                    <!-- 👉 NUOVO CONTATORE BANDCAMP: -->
-                    <div class="mt-6">
-                        <p class="text-xl text-cyan-400 font-semibold">
+                    <!-- Contatore Bandcamp -->
+                    <div class="bg-black/30 rounded-2xl p-4 border border-cyan-500/30">
+                        <p class="text-lg text-cyan-400 font-semibold mb-1">
                             <i class="fab fa-bandcamp mr-2"></i>
-                            Visitatori arrivati da Bandcamp:
-                            <span id="bandcamp-visits" class="font-bold">0</span>
+                            <span data-it="Da Bandcamp" data-en="From Bandcamp">Da Bandcamp</span>
                         </p>
+                        <div class="text-3xl font-bold text-cyan-300" id="bandcamp-visits">0</div>
+                        <p class="text-xs text-gray-500 mt-1" data-it="clic sul link Bandcamp" data-en="clicks on Bandcamp link">clic sul link Bandcamp</p>
                     </div>
 
-                    <p class="text-sm text-gray-500 mt-4" data-it="Contatori aggiornati in tempo reale da server remoto." 
-                       data-en="Counters updated in real-time from remote server.">
-                        Contatori aggiornati in tempo reale da server remoto.
+                    <p class="text-xs text-gray-600 mt-4 italic" data-it="Contatore locale (privacy-friendly, no cookie di terze parti)" data-en="Local counter (privacy-friendly, no third-party cookies)">
+                        Contatore locale (privacy-friendly, no cookie di terze parti)
                     </p>
                 </div>
             </div>
@@ -396,11 +396,11 @@
                             <div class="bg-black/30 rounded-2xl p-6 border border-white/10 max-w-xl mx-auto">
                                 <div class="flex justify-center gap-8">
                                     <div class="text-center">
-                                        <p class="heading text-4xl text-green-400" id="count-yes" aria-live="polite">0</p>
+                                        <p class="heading text-4xl text-green-400" id="count-yes" aria-live="polite">--</p>
                                         <p class="text-green-400/70" data-it="Interessati" data-en="Interested">Interessati</p>
                                     </div>
                                     <div class="text-center">
-                                        <p class="heading text-4xl text-red-400" id="count-no" aria-live="polite">0</p>
+                                        <p class="heading text-4xl text-red-400" id="count-no" aria-live="polite">--</p>
                                         <p class="text-red-400/70" data-it="Non interessati" data-en="Not interested">Non interessati</p>
                                     </div>
                                 </div>
@@ -598,7 +598,7 @@
         <img id="fullscreen-img" src="" alt="Fullscreen image" class="max-w-full max-h-full object-contain rounded-lg">
     </div>
 
-    <!-- MAIN SCRIPT (Lingua, Menu, Voti) -->
+    <!-- MAIN SCRIPT (Lingua, Menu, Voti, Gallerie) -->
     <script>
         let currentLang = 'it';
         let hasVoted = localStorage.getItem('mm_voted') === 'true';
@@ -718,10 +718,10 @@
         }
 
         function loadVotes() {
-            const votiSI = parseInt(localStorage.getItem(VOTE_STORAGE.YES)) || 0;
-            const votiNO = parseInt(localStorage.getItem(VOTE_STORAGE.NO)) || 0;
-            document.getElementById('count-yes').textContent = votiSI;
-            document.getElementById('count-no').textContent = votiNO;
+	const votiSI = parseInt(localStorage.getItem(VOTE_STORAGE.YES)) || 0;
+	const votiNO = parseInt(localStorage.getItem(VOTE_STORAGE.NO)) || 0;
+	document.getElementById('count-yes').textContent = votiSI > 0 ? votiSI : '--';
+	document.getElementById('count-no').textContent = votiNO > 0 ? votiNO : '--';
         }
 
         function updateVoteButtons() {
@@ -768,54 +768,66 @@
         }
     </script>
 
-    <!-- 👉 IL NUOVO SCRIPT DEL CONTATORE FUNZIONANTE 👈 -->
+    <!-- CONTATORE VISITE RIPARATO - Funziona in locale, persistente, privacy-friendly -->
     <script>
-        const namespace = "mirrormemories_prod"; 
-        const keyTotal = "visits_total";
-        const keyBandcamp = "visits_bandcamp";
-
-        async function initCounters() {
-            try {
-                // Legge l'indirizzo per capire da dove arriva l'utente
-                const params = new URLSearchParams(window.location.search);
-                const isFromBandcamp = params.get("ref") === "bandcamp";
-
-                // 1. GESTIONE CONTATORE GENERALE
-                let totalUrl = `https://api.counterapi.dev/v1/${namespace}/${keyTotal}`;
-                // Se è la sua prima visita in questa sessione, conta +1
-                if (!sessionStorage.getItem('counted_total')) {
-                    totalUrl += '/up';
-                    sessionStorage.setItem('counted_total', 'true');
-                }
-                const totalRes = await fetch(totalUrl);
-                const totalData = await totalRes.json();
+        const COUNTER = {
+            total: 'mm_visits_total_v2',      // Chiave per visite totali
+            bandcamp: 'mm_visits_bandcamp_v2', // Chiave per clic Bandcamp
+            lastVisit: 'mm_last_visit_date',   // Chiave per data ultima visita
+            
+            init() {
+                this.checkNewVisit();
+                this.trackBandcampClicks();
+                this.display();
+            },
+            
+            checkNewVisit() {
+                const today = new Date().toDateString();
+                const lastVisit = localStorage.getItem(this.lastVisit);
                 
-                // Mostro il numero generale (aggiungo un po' di visite perse col blocco)
-                document.getElementById("visitor-count").textContent = totalData.count + 150;
-
-                  // 2. GESTIONE CONTATORE BANDCAMP SPECIFICO
-                let bcUrl = `https://api.counterapi.dev/v1/${namespace}/${keyBandcamp}`;
-                // Se arriva da Bandcamp E non lo abbiamo ancora contato in questa sessione, fa +1
-                if (isFromBandcamp && !sessionStorage.getItem('counted_bc')) {
-                    bcUrl += '/up';
-                    sessionStorage.setItem('counted_bc', 'true');
+                // Conta solo se è la prima visita oggi (anti-spam)
+                if (lastVisit !== today) {
+                    let total = parseInt(localStorage.getItem(this.total)) || 0;
+                    total++;
+                    localStorage.setItem(this.total, total);
+                    localStorage.setItem(this.lastVisit, today);
+                    console.log('Nuova visita contata:', total);
+                } else {
+                    console.log('Visita già contata oggi');
                 }
-                const bcRes = await fetch(bcUrl);
-                const bcData = await bcRes.json();
+            },
+            
+            trackBandcampClicks() {
+                // Trova TUTTI i link a Bandcamp e aggiunge il tracking
+                document.querySelectorAll('a[href*="bandcamp.com"]').forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        let bc = parseInt(localStorage.getItem(this.bandcamp)) || 0;
+                        bc++;
+                        localStorage.setItem(this.bandcamp, bc);
+                        // Aggiorna subito la visualizzazione
+                        const bcElement = document.getElementById("bandcamp-visits");
+                        if (bcElement) bcElement.textContent = bc;
+                        console.log('Clic Bandcamp contato:', bc);
+                    });
+                });
+            },
+            
+            display() {
+                const total = localStorage.getItem(this.total) || 0;
+                const bc = localStorage.getItem(this.bandcamp) || 0;
                 
-                // Mostro il numero di Bandcamp (ORA È REALE, NESSUN TRUCCO)
-                document.getElementById("bandcamp-visits").textContent = bcData.count;
-
-            } catch (e) {
-                console.error("Errore di caricamento, utilizzo numeri sicuri:", e);
-                // In caso di errore di connessione mostra questi (i tuoi veri numeri di partenza)
-                document.getElementById("visitor-count").textContent = "6"; 
-                document.getElementById("bandcamp-visits").textContent = "0";
+                const totalElement = document.getElementById("visitor-count");
+                const bcElement = document.getElementById("bandcamp-visits");
+                
+                if (totalElement) totalElement.textContent = total;
+                if (bcElement) bcElement.textContent = bc;
+                
+                console.log('Contatore - Totale:', total, 'Bandcamp:', bc);
             }
-        }
+        };
 
-        // Faccio partire tutto appena la pagina carica
-        document.addEventListener("DOMContentLoaded", initCounters);
+        // Avvia il contatore quando il DOM è pronto
+        document.addEventListener("DOMContentLoaded", () => COUNTER.init());
     </script>
 </body>
 </html>
