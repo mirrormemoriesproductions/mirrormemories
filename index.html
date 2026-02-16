@@ -218,14 +218,14 @@
                     <div class="text-5xl font-bold gradient-text mb-2" id="visitor-count">0</div>
                     <p class="text-gray-400 mb-6" data-it="Visite totali" data-en="Total visits">Visite totali</p>
 
-                    <!-- Contatore Bandcamp -->
+                    <!-- Contatore Bandcamp - CORRETTO -->
                     <div class="bg-black/30 rounded-2xl p-4 border border-cyan-500/30">
                         <p class="text-lg text-cyan-400 font-semibold mb-1">
                             <i class="fab fa-bandcamp mr-2"></i>
                             <span data-it="Da Bandcamp" data-en="From Bandcamp">Da Bandcamp</span>
                         </p>
                         <div class="text-3xl font-bold text-cyan-300" id="bandcamp-visits">0</div>
-                        <p class="text-xs text-gray-500 mt-1" data-it="clic sul link Bandcamp" data-en="clicks on Bandcamp link">clic sul link Bandcamp</p>
+                        <p class="text-xs text-gray-500 mt-1" data-it="visite provenienti da Bandcamp" data-en="visits coming from Bandcamp">visite provenienti da Bandcamp</p>
                     </div>
 
                     <p class="text-xs text-gray-600 mt-4 italic" data-it="Contatore locale (privacy-friendly, no cookie di terze parti)" data-en="Local counter (privacy-friendly, no third-party cookies)">
@@ -718,10 +718,10 @@
         }
 
         function loadVotes() {
-	const votiSI = parseInt(localStorage.getItem(VOTE_STORAGE.YES)) || 0;
-	const votiNO = parseInt(localStorage.getItem(VOTE_STORAGE.NO)) || 0;
-	document.getElementById('count-yes').textContent = votiSI > 0 ? votiSI : '--';
-	document.getElementById('count-no').textContent = votiNO > 0 ? votiNO : '--';
+            const votiSI = parseInt(localStorage.getItem(VOTE_STORAGE.YES)) || 0;
+            const votiNO = parseInt(localStorage.getItem(VOTE_STORAGE.NO)) || 0;
+            document.getElementById('count-yes').textContent = votiSI > 0 ? votiSI : '--';
+            document.getElementById('count-no').textContent = votiNO > 0 ? votiNO : '--';
         }
 
         function updateVoteButtons() {
@@ -751,8 +751,8 @@
                 votiNO++;
                 localStorage.setItem(VOTE_STORAGE.NO, votiNO.toString());
             }
-            document.getElementById('count-yes').textContent = votiSI;
-            document.getElementById('count-no').textContent = votiNO;
+            document.getElementById('count-yes').textContent = votiSI > 0 ? votiSI : '--';
+            document.getElementById('count-no').textContent = votiNO > 0 ? votiNO : '--';
             hasVoted = true;
             localStorage.setItem(VOTE_STORAGE.VOTED, 'true');
             updateVoteButtons();
@@ -768,16 +768,14 @@
         }
     </script>
 
-    <!-- CONTATORE VISITE RIPARATO - Funziona in locale, persistente, privacy-friendly -->
+    <!-- CONTATORE VISITE - Funziona in locale, persistente -->
     <script>
-        const COUNTER = {
-            total: 'mm_visits_total_v2',      // Chiave per visite totali
-            bandcamp: 'mm_visits_bandcamp_v2', // Chiave per clic Bandcamp
-            lastVisit: 'mm_last_visit_date',   // Chiave per data ultima visita
+        const VISIT_COUNTER = {
+            total: 'mm_visits_total_v2',
+            lastVisit: 'mm_last_visit_date',
             
             init() {
                 this.checkNewVisit();
-                this.trackBandcampClicks();
                 this.display();
             },
             
@@ -785,49 +783,56 @@
                 const today = new Date().toDateString();
                 const lastVisit = localStorage.getItem(this.lastVisit);
                 
-                // Conta solo se è la prima visita oggi (anti-spam)
                 if (lastVisit !== today) {
                     let total = parseInt(localStorage.getItem(this.total)) || 0;
                     total++;
                     localStorage.setItem(this.total, total);
                     localStorage.setItem(this.lastVisit, today);
-                    console.log('Nuova visita contata:', total);
-                } else {
-                    console.log('Visita già contata oggi');
                 }
-            },
-            
-            trackBandcampClicks() {
-                // Trova TUTTI i link a Bandcamp e aggiunge il tracking
-                document.querySelectorAll('a[href*="bandcamp.com"]').forEach(link => {
-                    link.addEventListener('click', (e) => {
-                        let bc = parseInt(localStorage.getItem(this.bandcamp)) || 0;
-                        bc++;
-                        localStorage.setItem(this.bandcamp, bc);
-                        // Aggiorna subito la visualizzazione
-                        const bcElement = document.getElementById("bandcamp-visits");
-                        if (bcElement) bcElement.textContent = bc;
-                        console.log('Clic Bandcamp contato:', bc);
-                    });
-                });
             },
             
             display() {
                 const total = localStorage.getItem(this.total) || 0;
-                const bc = localStorage.getItem(this.bandcamp) || 0;
-                
-                const totalElement = document.getElementById("visitor-count");
-                const bcElement = document.getElementById("bandcamp-visits");
-                
-                if (totalElement) totalElement.textContent = total;
-                if (bcElement) bcElement.textContent = bc;
-                
-                console.log('Contatore - Totale:', total, 'Bandcamp:', bc);
+                const element = document.getElementById("visitor-count");
+                if (element) element.textContent = total;
             }
         };
 
-        // Avvia il contatore quando il DOM è pronto
-        document.addEventListener("DOMContentLoaded", () => COUNTER.init());
+        // CONTATORE BANDCAMP - RILEVA PROVENIENZA DA BANDCAMP
+        const BANDCAMP_COUNTER = {
+            key: 'mm_visits_from_bandcamp',
+            
+            init() {
+                this.checkReferrer();
+                this.display();
+            },
+            
+            checkReferrer() {
+                // Controlla se l'utente arriva da bandcamp.com
+                const referrer = document.referrer;
+                const isFromBandcamp = referrer && referrer.includes('bandcamp.com');
+                
+                // Conta solo se è la prima volta in questa sessione
+                if (isFromBandcamp && !sessionStorage.getItem('counted_from_bc')) {
+                    let count = parseInt(localStorage.getItem(this.key)) || 0;
+                    count++;
+                    localStorage.setItem(this.key, count);
+                    sessionStorage.setItem('counted_from_bc', 'true');
+                }
+            },
+            
+            display() {
+                const count = localStorage.getItem(this.key) || 0;
+                const element = document.getElementById("bandcamp-visits");
+                if (element) element.textContent = count;
+            }
+        };
+
+        // Avvia entrambi i contatori
+        document.addEventListener("DOMContentLoaded", () => {
+            VISIT_COUNTER.init();
+            BANDCAMP_COUNTER.init();
+        });
     </script>
 </body>
 </html>
